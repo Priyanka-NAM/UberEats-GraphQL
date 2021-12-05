@@ -19,6 +19,7 @@ const {
   GraphQLList,
   GraphQLNonNull,
   GraphQLUnionType,
+  GraphQLFloat,
 } = graphql;
 
 const CustomerDetailsType = new GraphQLObjectType({
@@ -51,7 +52,7 @@ const OrderDetailsType = new GraphQLObjectType({
     tax: { type: GraphQLInt },
     delivery_cost: { type: GraphQLInt },
     gratitude: { type: GraphQLInt },
-    sub_total: { type: GraphQLInt },
+    sub_total: { type: GraphQLFloat },
     // create_time: { type: Date, default: Date.now() },
     // update_time: { type: Date, default: Date.now() },
     order_delivery_type: { type: GraphQLString },
@@ -104,7 +105,7 @@ const DishesType = new GraphQLObjectType({
     name: { type: GraphQLString },
     description: { type: GraphQLString },
     ingredients: { type: GraphQLString },
-    price: { type: GraphQLInt },
+    price: { type: GraphQLFloat },
     image_file_path: { type: GraphQLString },
     category: { type: GraphQLString },
     dish_type: { type: GraphQLString },
@@ -305,6 +306,60 @@ const profileOwnerOutputType = new GraphQLObjectType({
     status: { type: GraphQLString },
     errCode: { type: GraphQLInt },
     user: { type: RestaurantDetailsType },
+  }),
+});
+
+const addOrderIds_Orders = (orders) => {
+  const modifiedOrders = orders.map((order) => {
+    let modifiedOrder = JSON.parse(JSON.stringify(order));
+    modifiedOrder.order_id = order._id;
+    return modifiedOrder;
+  });
+  return modifiedOrders;
+};
+
+const ordersNewOrderAddOutputType = new GraphQLObjectType({
+  name: "ordersNewOrderAddOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    orders: { type: new GraphQLList(OrderDetailsType) },
+  }),
+});
+
+const ordersNewOrderUpdateOutputType = new GraphQLObjectType({
+  name: "ordersNewOrderUpdateOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    orders: { type: new GraphQLList(OrderDetailsType) },
+  }),
+});
+
+const addDishesIds = (dishes) => {
+  const modifiedDishes = dishes.map((dish) => {
+    let modifiedDishData = JSON.parse(JSON.stringify(dish));
+    modifiedDishData.dish_id = dish._id;
+    return modifiedDishData;
+  });
+  return modifiedDishes;
+};
+
+const dishesAddDishOutputType = new GraphQLObjectType({
+  name: "dishesAddDishOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    allDishes: { type: new GraphQLList(DishesType) },
+  }),
+});
+
+const dishesUpdateDishOutputType = new GraphQLObjectType({
+  name: "dishesUpdateDishOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    allDishes: { type: new GraphQLList(DishesType) },
   }),
 });
 
@@ -1039,6 +1094,392 @@ const RootQuery = new GraphQLObjectType({
                   return;
                 }
               );
+            }
+          );
+        });
+      },
+    },
+
+    ordersNewOrderAdd: {
+      type: ordersNewOrderAddOutputType,
+      args: {
+        restaurentId: {
+          type: GraphQLString,
+        },
+        customerName: {
+          type: GraphQLString,
+        },
+        restaurant_name: {
+          type: GraphQLString,
+        },
+        restaurant_city: {
+          type: GraphQLString,
+        },
+        restaurant_image: {
+          type: GraphQLString,
+        },
+        customerId: {
+          type: GraphQLString,
+        },
+        order_status: {
+          type: GraphQLString,
+        },
+        delivery_status: {
+          type: GraphQLString,
+        },
+        order_total: {
+          type: GraphQLFloat,
+        },
+        tax: {
+          type: GraphQLString,
+        },
+        delivery_cost: {
+          type: GraphQLString,
+        },
+        gratitude: {
+          type: GraphQLString,
+        },
+        sub_total: {
+          type: GraphQLFloat,
+        },
+        order_delivery_type: {
+          type: GraphQLString,
+        },
+        order_address_line_1: {
+          type: GraphQLString,
+        },
+        order_city: {
+          type: GraphQLString,
+        },
+        order_state: {
+          type: GraphQLString,
+        },
+        order_country: {
+          type: GraphQLString,
+        },
+        order_zipcode: {
+          type: GraphQLString,
+        },
+        dishes: {
+          type: GraphQLString,
+        },
+        notes: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        let dishes = [];
+        const cart_items = args.cart_items;
+        for (let i = 0; i < cart_items.length; i += 1) {
+          dishes.push({
+            dish_id: cart_items[i].dish_id,
+            dish_name: cart_items[i].title,
+            quantity: cart_items[i].quantity,
+            price: cart_items[i].price,
+          });
+        }
+        const newOrder = new OrderDetails({
+          restaurant_id: args.restaurant_id,
+          customer_name: args.customerName,
+          restaurant_name: args.restaurant_name,
+          restaurant_city: args.restaurant_city,
+          restaurant_image_file_path: args.restaurant_image,
+          customer_id: args.customerId,
+          order_status: args.order_status,
+          delivery_status: args.delivery_status,
+          order_total: args.order_total,
+          tax: args.tax,
+          delivery_cost: args.delivery_cost,
+          gratitude: args.gratitude,
+          sub_total: args.sub_total,
+          order_delivery_type: args.order_delivery_type,
+          order_address_line_1: args.order_address_line_1,
+          order_city: args.order_city,
+          order_state: args.order_state,
+          order_country: args.order_country,
+          order_zipcode: args.order_zipcode,
+          dishes: dishes,
+          notes: args.notes,
+        });
+        return new Promise(function (resolve, reject) {
+          newOrder.save((err, data) => {
+            if (err) {
+              resolve({
+                errCode: 400,
+                status: "ORDER_CREATION_FAILED",
+              });
+              return;
+            } else {
+              OrderDetails.find(
+                { customer_id: args.customerId },
+                (finderr, allorders) => {
+                  if (finderr) {
+                    resolve({
+                      errCode: 400,
+                      status: "CUSTOMER_ID_NULL",
+                    });
+                    return;
+                  }
+                  resolve({
+                    status: "ORDER_CREATED",
+                    orders: addOrderIds(allorders),
+                  });
+                  return;
+                }
+              );
+            }
+          });
+        });
+      },
+    },
+
+    ordersNewOrderUpdate: {
+      type: ordersNewOrderUpdateOutputType,
+      args: {
+        order_status: {
+          type: GraphQLString,
+        },
+        delivery_status: {
+          type: GraphQLString,
+        },
+        restaurant_id: {
+          type: GraphQLString,
+        },
+        order_id: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const OrderUpdate = {
+          $set: {
+            order_status: args.order_status,
+            delivery_status: args.delivery_status,
+            restaurant_id: args.restaurant_id,
+            order_id: args.order_id,
+          },
+        };
+        return new Promise(function (resolve, reject) {
+          OrderDetails.updateOne(
+            { _id: args.order_id },
+            OrderUpdate,
+            (error, result) => {
+              if (error) {
+                resolve({
+                  errCode: 400,
+                  status: "NO_ORDER_ID",
+                });
+                return;
+              }
+              OrderDetails.findOne({ _id: args.order_id }, (err, data) => {
+                if (err) {
+                  resolve({
+                    errCode: 400,
+                    status: "NO_RESTAURANT_ID",
+                  });
+                  return;
+                }
+                OrderDetails.find(
+                  { restaurant_id: args.restaurant_id, order_status: "Active" },
+                  (finderr, allorders) => {
+                    if (finderr) {
+                      resolve({
+                        errCode: 400,
+                        status: "CUSTOMER_ID_NULL",
+                      });
+                      return;
+                    }
+                    resolve({
+                      status: "UPDATED_ORDER",
+                      orders: addOrderIds(allorders),
+                    });
+                  }
+                );
+              });
+            }
+          );
+        });
+      },
+    },
+
+    dishesAddDish: {
+      type: dishesAddDishOutputType,
+      args: {
+        restaurentId: {
+          type: GraphQLString,
+        },
+        dishdescription: {
+          type: GraphQLString,
+        },
+        dishname: {
+          type: GraphQLString,
+        },
+        imageFilePath: {
+          type: GraphQLString,
+        },
+        dishcategory: {
+          type: GraphQLString,
+        },
+        dishtype: {
+          type: GraphQLString,
+        },
+        ingredients: {
+          type: GraphQLString,
+        },
+        price: {
+          type: GraphQLFloat,
+        },
+      },
+      resolve(parent, args) {
+        const newDish = new Dishes({
+          restaurant_id: args.restaurentId,
+          name: args.dishname,
+          description: args.dishdescription,
+          image_file_path: args.imageFilePath,
+          category: args.dishcategory,
+          dish_type: args.dishtype,
+          ingredients: args.ingredients,
+          price: args.price,
+          isActive: "true",
+        });
+        return new Promise(function (resolve, reject) {
+          Dishes.findOne(
+            {
+              restaurant_id: args.restaurentId,
+              name: args.dishname,
+              isActive: "true",
+            },
+            (error, result) => {
+              if (error) {
+                resolve({
+                  errCode: 400,
+                  status: "Internal server error",
+                });
+                return;
+              }
+              if (result) {
+                resolve({
+                  errCode: 400,
+                  status: "DISH_EXISTS",
+                });
+                return;
+              } else {
+                newDish.save((err, data) => {
+                  if (err) {
+                    resolve({
+                      errCode: 400,
+                      status: "DISH_COULDNOT_BE_ADDED",
+                    });
+                    return;
+                  } else {
+                    Dishes.find(
+                      { restaurant_id: args.restaurentId, isActive: "true" },
+                      (finderr, dishes) => {
+                        if (finderr) {
+                          resolve({
+                            errCode: 400,
+                            status: "RESTAURANT_ID_NULL",
+                          });
+                          return;
+                        }
+                        resolve({
+                          status: "DISH_ADDED",
+                          allDishes: addDishesIds(dishes),
+                        });
+                        return;
+                      }
+                    );
+                  }
+                });
+              }
+            }
+          );
+        });
+      },
+    },
+
+    dishesUpdateDish: {
+      type: dishesUpdateDishOutputType,
+      args: {
+        dishId: {
+          type: GraphQLString,
+        },
+        restaurentId: {
+          type: GraphQLString,
+        },
+        dishname: {
+          type: GraphQLString,
+        },
+        dishdescription: {
+          type: GraphQLString,
+        },
+        imageFilePath: {
+          type: GraphQLString,
+        },
+        dishcategory: {
+          type: GraphQLString,
+        },
+        dishtype: {
+          type: GraphQLString,
+        },
+        ingredients: {
+          type: GraphQLString,
+        },
+        price: {
+          type: GraphQLFloat,
+        },
+      },
+      resolve(parent, args) {
+        const DishUpdate = {
+          $set: {
+            restaurant_id: args.restaurentId,
+            name: args.dishname,
+            description: args.dishdescription,
+            image_file_path: args.imageFilePath,
+            category: args.dishcategory,
+            dish_type: args.dishtype,
+            price: args.price,
+            ingredients: args.ingredients,
+            isActive: args.isActive,
+          },
+        };
+        return new Promise(function (resolve, reject) {
+          Dishes.updateOne(
+            { _id: args.dishId, restaurant_id: args.restaurentId },
+            DishUpdate,
+            (error, result) => {
+              if (error) {
+                resolve({
+                  errCode: 400,
+                  status: "NO_DISH_ID",
+                });
+                return;
+              }
+              Dishes.findOne({ _id: args.dishId }, (err, dishdata) => {
+                if (err) {
+                  resolve({
+                    errCode: 400,
+                    status: "CANNOT_GET_UPDATED_DISH_DETAILS",
+                  });
+                  return;
+                }
+                Dishes.find(
+                  { restaurant_id: args.restaurentId, isActive: "true" },
+                  (finderr, dishes) => {
+                    if (finderr) {
+                      resolve({
+                        errCode: 400,
+                        status: "RESTAURANT_ID_NULL",
+                      });
+                      return;
+                    }
+                    resolve({
+                      status: "DISH_UPDATED",
+                      allDishes: addDishesIds(dishes),
+                    });
+                    return;
+                  }
+                );
+              });
             }
           );
         });
