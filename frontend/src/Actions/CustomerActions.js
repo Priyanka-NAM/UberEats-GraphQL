@@ -20,21 +20,36 @@ import {
 } from "./types";
 import backendServer from "../backEndConfig";
 import { getToken } from "../components/Service/authService";
+import ApolloClientProvider from "./ApolloClientProvider";
+import { SIGN_UP_CUSTOMER } from "../Queries/queries";
 
 export const addCustomer = (signupdata) => async (dispatch) => {
   try {
     axios.defaults.withCredentials = true;
-
-    const res = await axios.post(
-      `${backendServer}/ubereats/signup/customer`,
-      signupdata
-    );
+    const { client } = ApolloClientProvider;
+    const res = client.query({
+      query: SIGN_UP_CUSTOMER,
+      variables: signupdata,
+    });
+    console.log("Sign UP data ", signupdata);
     const response = await res;
-    localStorage.setItem("jwtToken", response.data.token);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
+    console.log("Sign UP  ", response.data.signUpCustomer);
+    console.log("Sign UP token ", response.data.signUpCustomer.token);
+
+    localStorage.setItem("jwtToken", response.data.signUpCustomer.token);
+    localStorage.setItem(
+      "user",
+      JSON.stringify(response.data.signUpCustomer.user)
+    );
+    const { data } = response;
+    const { signUpCustomer } = data;
+    const { errCode, user, status } = signUpCustomer;
+    if ((errCode && errCode === 400) || errCode === 500) {
+      throw new Error("SignIn Error");
+    }
     dispatch({
       type: CUSTOMER_SIGNUP,
-      payload: response.data,
+      payload: response.data.signUpCustomer,
     });
   } catch (err) {
     dispatch({
@@ -115,39 +130,38 @@ export const customerOrderPlaced = (customerNewOrder) => async (dispatch) => {
   }
 };
 
-export const customerOrderUpdate =
-  (updateOrderDetails) => async (dispatch) => {
-    const { customer_id: customerId, name: customerName } = JSON.parse(
-      localStorage.getItem("user")
-    );
-    console.log(" customerId: ", customerId);
-    // if (!restaurantId) return;
-    axios.defaults.withCredentials = true;
-    axios.defaults.headers.common["x-auth-token"] = getToken();
-    // eslint-disable-next-line no-param-reassign
-    updateOrderDetails.customer_id = customerId;
-    axios
-      .post(
-        `${backendServer}/ubereats/orders/customer/orderupdate`,
-        updateOrderDetails
-      )
-      .then((response) => {
-        if (response.data.status === "CUSTOMER_UPDATED_ORDER") {
-          dispatch({
-            type: CUSTOMER_ORDER_UPDATE,
-            payload: response.data.orders,
-          });
-        }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data) {
-          dispatch({
-            type: CUSTOMER_ORDER_UPDATE_FAILURE,
-            payload: error.response.data,
-          });
-        }
-      });
-  };
+export const customerOrderUpdate = (updateOrderDetails) => async (dispatch) => {
+  const { customer_id: customerId, name: customerName } = JSON.parse(
+    localStorage.getItem("user")
+  );
+  console.log(" customerId: ", customerId);
+  // if (!restaurantId) return;
+  axios.defaults.withCredentials = true;
+  axios.defaults.headers.common["x-auth-token"] = getToken();
+  // eslint-disable-next-line no-param-reassign
+  updateOrderDetails.customer_id = customerId;
+  axios
+    .post(
+      `${backendServer}/ubereats/orders/customer/orderupdate`,
+      updateOrderDetails
+    )
+    .then((response) => {
+      if (response.data.status === "CUSTOMER_UPDATED_ORDER") {
+        dispatch({
+          type: CUSTOMER_ORDER_UPDATE,
+          payload: response.data.orders,
+        });
+      }
+    })
+    .catch((error) => {
+      if (error.response && error.response.data) {
+        dispatch({
+          type: CUSTOMER_ORDER_UPDATE_FAILURE,
+          payload: error.response.data,
+        });
+      }
+    });
+};
 
 export const customerFav = () => async (dispatch) => {
   const { customer_id: customerId } = JSON.parse(localStorage.getItem("user"));

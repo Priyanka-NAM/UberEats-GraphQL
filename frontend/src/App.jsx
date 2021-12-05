@@ -1,4 +1,4 @@
-import "./App.css";
+// import "./App.css";
 import React from "react";
 import { Provider } from "react-redux";
 import { Switch } from "react-router";

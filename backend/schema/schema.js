@@ -89,7 +89,7 @@ const RestaurantDetailsType = new GraphQLObjectType({
     restaurant_country: { type: GraphQLString },
     restaurant_zipcode: { type: GraphQLInt },
     image_file_path: { type: GraphQLString },
-    phone_num: { type: GraphQLInt },
+    phone_num: { type: GraphQLString },
     restaurant_start_time: { type: GraphQLString },
     restaurant_end_time: { type: GraphQLString },
     restaurant_week_start: { type: GraphQLString },
@@ -143,7 +143,7 @@ const customerRestaurantDetailsType = new GraphQLObjectType({
     restaurant_country: { type: GraphQLString },
     restaurant_zipcode: { type: GraphQLInt },
     image_file_path: { type: GraphQLString },
-    phone_num: { type: GraphQLInt },
+    phone_num: { type: GraphQLString },
     restaurant_start_time: { type: GraphQLString },
     restaurant_end_time: { type: GraphQLString },
     restaurant_week_start: { type: GraphQLString },
@@ -276,9 +276,10 @@ const addRestaurantIds2 = (Restaurants) => {
 const signUpCustomerOutputType = new GraphQLObjectType({
   name: "signUpCustomerOutputType",
   fields: () => ({
+    token: { type: GraphQLString },
     status: { type: GraphQLString },
     errCode: { type: GraphQLInt },
-    user: { type: RestaurantDetailsType },
+    user: { type: CustomerDetailsType },
   }),
 });
 
@@ -379,6 +380,7 @@ const RootQuery = new GraphQLObjectType({
       },
       resolve(parent, args) {
         const hashedPassword = md5(args.password);
+        console.log("Args from frontend ", args);
         return new Promise(function (resolve, reject) {
           RestaurantDetails.findOne(
             { email_id: args.email, password: hashedPassword },
@@ -409,11 +411,13 @@ const RootQuery = new GraphQLObjectType({
                   (error, result) => {
                     if (error) {
                       console.log(
-                        "Fetching customer details error in SignIn request handler"
+                        "Fetching customer details error in SignIn request handler",
+                        error
                       );
                       resolve({ errCode: 500 });
                       return;
                     }
+                    console.log("Result from CustomerDetails ==>", result);
                     if (result) {
                       let modifiedCustomerData = JSON.parse(
                         JSON.stringify(result)
