@@ -1,6 +1,7 @@
 /* eslint-disable prefer-template */
 const express = require("express");
-const graphqlHTTP = require("express-graphql");
+const { graphqlHTTP } = require("express-graphql");
+const schema = require("./schema/schema");
 
 const app = express();
 const cookieParser = require("cookie-parser");
