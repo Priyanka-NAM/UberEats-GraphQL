@@ -225,6 +225,89 @@ const getOrderStatusOutputType = new GraphQLObjectType({
   }),
 });
 
+const getOwnerRestaurantDetailsOutputType = new GraphQLObjectType({
+  name: "getOwnerRestaurantDetailsOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    user: { type: RestaurantDetailsType },
+  }),
+});
+
+const getRestaurantDetailsOutputType = new GraphQLObjectType({
+  name: "getRestaurantDetailsOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    restaurentDetails: { type: RestaurantDetailsType },
+  }),
+});
+
+const getSearchRestaurantsOutputType = new GraphQLObjectType({
+  name: "getSearchRestaurantsOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    allRestaurants: { type: new GraphQLList(RestaurantDetailsType) },
+  }),
+});
+
+const addRestaurantIds = (Restaurants) => {
+  const modifiedRestaurants = Restaurants.map((Restaurant) => {
+    let modifiedRestaurant = JSON.parse(JSON.stringify(Restaurant));
+    modifiedRestaurant.restaurant_id = Restaurant._id;
+    modifiedRestaurant.is_search_result = 1;
+    return modifiedRestaurant;
+  });
+  return modifiedRestaurants;
+};
+
+const addRestaurantIds2 = (Restaurants) => {
+  const modifiedRestaurants = Restaurants.map((Restaurant) => {
+    let modifiedRestaurant = JSON.parse(JSON.stringify(Restaurant));
+    modifiedRestaurant.restaurant_id = Restaurant._id;
+    modifiedRestaurant.is_search_result = 0;
+    return modifiedRestaurant;
+  });
+  return modifiedRestaurants;
+};
+
+const signUpCustomerOutputType = new GraphQLObjectType({
+  name: "signUpCustomerOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    user: { type: RestaurantDetailsType },
+  }),
+});
+
+const profileCustomerOutputType = new GraphQLObjectType({
+  name: "profileCustomerOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    user: { type: CustomerDetailsType },
+  }),
+});
+
+const signUpOwnerOutputType = new GraphQLObjectType({
+  name: "signUpOwnerOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    user: { type: CustomerDetailsType },
+  }),
+});
+
+const profileOwnerOutputType = new GraphQLObjectType({
+  name: "profileOwnerOutputType",
+  fields: () => ({
+    status: { type: GraphQLString },
+    errCode: { type: GraphQLInt },
+    user: { type: RestaurantDetailsType },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   description: "Root Query",
@@ -487,13 +570,558 @@ const RootQuery = new GraphQLObjectType({
         });
       },
     },
+
+    getOwnerRestaurantDetails: {
+      type: getOwnerRestaurantDetailsOutputType,
+      args: {
+        restaurant_id: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.findOne(
+            { _id: args.restaurant_id },
+            (err, restaurantdata) => {
+              if (err || !restaurantdata) {
+                resolve({
+                  errCode: 400,
+                  status: "OWNER_PROFILE_DETAILS_FAILURE",
+                });
+                return;
+              }
+              let modifiedData = JSON.parse(JSON.stringify(restaurantdata));
+              modifiedData.restaurant_id = restaurantdata._id;
+              resolve({
+                status: "OWNER_PROFILE_DETAILS",
+                user: modifiedData,
+              });
+            }
+          );
+        });
+      },
+    },
+
+    getRestaurantDetails: {
+      type: getRestaurantDetailsOutputType,
+      args: {
+        restaurant_id: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.findOne(
+            { _id: args.restaurant_id },
+            (err, restaurantdata) => {
+              if (err || !restaurantdata) {
+                resolve(null, {
+                  errCode: 400,
+                  status: "RESTAURANTS_NOT_FOUND",
+                });
+                return;
+              }
+              let modifiedData = JSON.parse(JSON.stringify(restaurantdata));
+              modifiedData.restaurant_id = restaurantdata._id;
+              resolve({
+                status: "RESTAURANT_DETAILS",
+                restaurentDetails: modifiedData,
+              });
+              return;
+            }
+          );
+        });
+      },
+    },
+
+    getSearchRestaurants: {
+      type: getSearchRestaurantsOutputType,
+      args: {
+        search_input: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.find(
+            { restaurant_city: args.search_input },
+            (err, data) => {
+              if (err) {
+                resolve({
+                  errCode: 400,
+                  status: "RESTAURANTS_NOT_FOUND",
+                });
+                return;
+              }
+              RestaurantDetails.find(
+                { restaurant_city: { $ne: args.search_input } },
+                (err2, data2) => {
+                  if (err2) {
+                    resolve({
+                      errCode: 400,
+                      status: "RESTAURANTS_NOT_FOUND",
+                    });
+                    return;
+                  }
+                  const rem_restaurants = addRestaurantIds2(data2);
+                  const search_restaurants = addRestaurantIds(data);
+                  const all_restos = rem_restaurants.concat(search_restaurants);
+                  resolve({
+                    status: "ALL_RESTAURANTS",
+                    allRestaurants: all_restos,
+                  });
+                }
+              );
+            }
+          );
+        });
+      },
+    },
+
+    signUpCustomer: {
+      type: signUpCustomerOutputType,
+      args: {
+        name: {
+          type: GraphQLString,
+        },
+        email: {
+          type: GraphQLString,
+        },
+        password: {
+          type: GraphQLString,
+        },
+        address_line_1: {
+          type: GraphQLString,
+        },
+        city: {
+          type: GraphQLString,
+        },
+        state: {
+          type: GraphQLString,
+        },
+        country: {
+          type: GraphQLString,
+        },
+        zipcode: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const password = args.password;
+        const hashedPassword = md5(password);
+        const newUser = new CustomerDetails({
+          is_owner: 0,
+          name: args.name,
+          email_id: args.email,
+          password: hashedPassword,
+          address_line_1: args.address_line_1,
+          city: args.city,
+          state: args.state,
+          country: args.country,
+          zipcode: args.zipcode,
+        });
+        return new Promise(function (resolve, reject) {
+          CustomerDetails.findOne({ email_id: args.email }, (error, result) => {
+            if (error) {
+              resolve({ errCode: 500 });
+              return;
+            }
+            if (result) {
+              resolve({ errCode: 400, status: "USER_EXISTS" });
+              return;
+            } else {
+              newUser.save((err, data) => {
+                if (err) {
+                  console.log("********************", err);
+                  resolve({ errCode: 500, status: "Test" });
+                  return;
+                } else {
+                  let modifiedData = JSON.parse(JSON.stringify(data));
+                  modifiedData.customer_id = data._id;
+                  const token = jwt.sign({ _id: data }, secret);
+                  resolve({
+                    status: "USER_ADDED",
+                    user: modifiedData,
+                    token,
+                  });
+                }
+              });
+            }
+          });
+        });
+      },
+    },
+
+    signUpOwner: {
+      type: signUpOwnerOutputType,
+      args: {
+        name: {
+          type: GraphQLString,
+        },
+        email: {
+          type: GraphQLString,
+        },
+        password: {
+          type: GraphQLString,
+        },
+        restaurant_address_line_one: {
+          type: GraphQLString,
+        },
+        restaurant_city: {
+          type: GraphQLString,
+        },
+        restaurant_state: {
+          type: GraphQLString,
+        },
+        restaurant_country: {
+          type: GraphQLString,
+        },
+        restaurant_zipcode: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const password = args.password;
+        const hashedPassword = md5(password);
+        const newUser = new RestaurantDetails({
+          is_owner: 1,
+          name: args.name,
+          email_id: args.email,
+          password: hashedPassword,
+          restaurant_address_line_one: args.restaurant_address_line_one,
+          restaurant_city: args.restaurant_city,
+          restaurant_state: args.restaurant_state,
+          restaurant_country: args.restaurant_country,
+          restaurant_zipcode: args.restaurant_zipcode,
+          delivery_type: "Both",
+        });
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.findOne(
+            { email_id: args.email },
+            (error, result) => {
+              if (error) {
+                resolve({ errCode: 500 });
+                return;
+              }
+              if (result) {
+                resolve({
+                  errCode: 400,
+                  status: "RESTAURANT_ALREADY_EXISTS",
+                });
+                return;
+              } else {
+                newUser.save((err, data) => {
+                  if (err) {
+                    resolve({ errCode: 500 });
+                    return;
+                  } else {
+                    let modifiedData = JSON.parse(JSON.stringify(data));
+                    modifiedData.restaurant_id = data._id;
+                    const token = jwt.sign({ _id: data }, secret);
+                    resolve({
+                      status: "RESTAURANT_ADDED",
+                      user: modifiedData,
+                      token,
+                    });
+                  }
+                });
+              }
+            }
+          );
+        });
+      },
+    },
+
+    profileCustomer: {
+      type: profileCustomerOutputType,
+      args: {
+        customer_id: {
+          type: GraphQLString,
+        },
+        name: {
+          type: GraphQLString,
+        },
+        email: {
+          type: GraphQLString,
+        },
+        password: {
+          type: GraphQLString,
+        },
+        nick_name: {
+          type: GraphQLString,
+        },
+        phone_num: {
+          type: GraphQLString,
+        },
+        date_of_birth: {
+          type: GraphQLString,
+        },
+        address_line_1: {
+          type: GraphQLString,
+        },
+        city: {
+          type: GraphQLString,
+        },
+        state: {
+          type: GraphQLString,
+        },
+        country: {
+          type: GraphQLString,
+        },
+        zipcode: {
+          type: GraphQLString,
+        },
+        profile_pic_file_path: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const password = args.password;
+        const hashedPassword = md5(password);
+        const UserUpdate = {
+          $set: {
+            is_owner: 0,
+            name: args.name,
+            email_id: args.email,
+            password: hashedPassword,
+            nick_name: args.nick_name,
+            phone_num: args.phone_num,
+            date_of_birth: args.date_of_birth,
+            address_line_1: args.address_line_1,
+            city: args.city,
+            state: args.state,
+            country: args.country,
+            zipcode: args.zipcode,
+            profile_pic_file_path: args.profile_pic_file_path,
+          },
+        };
+        return new Promise(function (resolve, reject) {
+          CustomerDetails.updateOne(
+            { _id: args.customer_id },
+            UserUpdate,
+            (error, result) => {
+              if (error) {
+                console.log("Error ==>", error);
+                resolve({
+                  errCode: 400,
+                  status: "NO_CUSTOMER_ID",
+                });
+                return;
+              }
+              CustomerDetails.findOne(
+                { _id: args.customer_id },
+                (err, customerdata) => {
+                  if (err) {
+                    resolve({
+                      errCode: 400,
+                      status: "CANNOT_GET_UPDATED_CUSTOMER_DETAILS",
+                    });
+                    return;
+                  }
+                  let modifiedCustomerData = JSON.parse(
+                    JSON.stringify(customerdata)
+                  );
+                  modifiedCustomerData.customer_id = customerdata._id;
+                  resolve({
+                    status: "CUSTOMER_UPDATED",
+                    user: modifiedCustomerData,
+                  });
+                }
+              );
+            }
+          );
+        });
+      },
+    },
+
+    profileOwner: {
+      type: profileOwnerOutputType,
+      args: {
+        restaurant_id: {
+          type: GraphQLString,
+        },
+        name: {
+          type: GraphQLString,
+        },
+        email_id: {
+          type: GraphQLString,
+        },
+        password: {
+          type: GraphQLString,
+        },
+        description: {
+          type: GraphQLString,
+        },
+        phone_num: {
+          type: GraphQLString,
+        },
+
+        restaurant_address_line_one: {
+          type: GraphQLString,
+        },
+        restaurant_city: {
+          type: GraphQLString,
+        },
+        restaurant_state: {
+          type: GraphQLString,
+        },
+        restaurant_country: {
+          type: GraphQLString,
+        },
+        restaurant_zipcode: {
+          type: GraphQLString,
+        },
+        image_file_path: {
+          type: GraphQLString,
+        },
+        restaurant_start_time: {
+          type: GraphQLString,
+        },
+        restaurant_end_time: {
+          type: GraphQLString,
+        },
+        delivery_type: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const password = args.password;
+        const hashedPassword = md5(password);
+        const RestaurantUpdate = {
+          $set: {
+            is_owner: 1,
+            name: args.name,
+            email_id: args.email,
+            password: hashedPassword,
+            description: args.description,
+            phone_num: args.phone_num,
+            restaurant_address_line_one: args.restaurant_address_line_one,
+            restaurant_city: args.restaurant_city,
+            restaurant_state: args.restaurant_state,
+            restaurant_country: args.restaurant_country,
+            restaurant_zipcode: args.restaurant_zipcode,
+            image_file_path: args.image_file_path,
+            restaurant_start_time: args.restaurant_start_time,
+            restaurant_end_time: args.restaurant_end_time,
+            restaurant_week_start: args.restaurant_week_start,
+            restaurant_week_end: args.restaurant_week_end,
+            delivery_type: args.delivery_type,
+          },
+        };
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.updateOne(
+            { _id: args.restaurant_id },
+            RestaurantUpdate,
+            (error, result) => {
+              if (error) {
+                resolve({
+                  errCode: 400,
+                  status: "NO_RESTAURANT_ID",
+                });
+                return;
+              }
+              RestaurantDetails.findOne(
+                { _id: args.restaurant_id },
+                (err, restaurantdata) => {
+                  if (err) {
+                    resolve({
+                      errCode: 400,
+                      status: "CANNOT_GET_UPDATED_RESTAURANT_DETAILS",
+                    });
+                    return;
+                  }
+                  let modifiedData = JSON.parse(JSON.stringify(restaurantdata));
+                  modifiedData.restaurant_id = restaurantdata._id;
+                  resolve({
+                    status: "RESTAURANT_UPDATED",
+                    user: modifiedData,
+                  });
+                  return;
+                }
+              );
+            }
+          );
+        });
+      },
+    },
   },
 });
 
 // const Mutation = new GraphQLObjectType({
 //   name: "mutation",
 //   fields: {
+//     customersignup: {
+//       type: signupResult,
+//       args: {
+//         userEmail: {
+//           type: GraphQLString,
+//         },
+//         userPassword: {
+//           type: GraphQLString,
+//         },
+//         firstName: {
+//           type: GraphQLString,
+//         },
+//         lastName: {
+//           type: GraphQLString,
+//         },
+//         userPhone: {
+//           type: GraphQLString,
+//         },
+//         userAddress: {
+//           type: GraphQLString,
+//         },
+//         userZip: {
+//           type: GraphQLString,
+//         },
+//         userImage: {
+//           type: GraphQLString,
+//         },
+//         accountType: {
+//           type: GraphQLInt,
+//         },
+//       },
 
+//       resolve(parent, args) {
+//         console.log("args: ", args);
+//         console.log("In customer signup");
+//         return new Promise(function (resolve, reject) {
+//           if (args.accountType != 1) {
+//             console.log("enter accountype as 1");
+//             reject("error");
+//           } else {
+//             var new_user = new Users({
+//               firstName: args.firstName,
+//               lastName: args.lastName,
+//               userEmail: args.userEmail,
+//               userPassword: args.userPassword,
+//               userPhone: args.userPhone,
+//               userAddress: args.userAddress,
+//               userZip: args.userZip,
+//               accountType: args.accountType,
+//             });
+
+//             new_user.save(function (err) {
+//               if (err) {
+//                 console.log(err);
+//                 result = {
+//                   success: false,
+//                   duplicateUser: true,
+//                 };
+//                 reject(result);
+//               } else {
+//                 console.log("User saved successfully", new_user);
+//                 result = {
+//                   success: true,
+//                   duplicateUser: false,
+//                 };
+//                 resolve(result);
+//               }
+//             });
+//           }
+//         });
+//       },
+//     },
 //   },
 // });
 
