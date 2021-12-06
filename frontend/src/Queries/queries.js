@@ -8,6 +8,7 @@ const LOGIN_QUERY = gql`
       token
       user {
         is_owner
+        name
         email_id
         password
         date_of_birth
@@ -167,32 +168,40 @@ const UPDATE_CUSTOMER = gql`
   }
 `;
 
-const CUSTOMER_ORDERS = gql`
-  query getRestaurantsQuery {
-    getRestaurants {
+const GET_CUSTOMER_ORDERS = gql`
+  query getOrderStatus($customer_id: String) {
+    getOrderStatus(customer_id: $customer_id) {
       status
       errCode
-      allRestaurants {
-        is_search_result
-        is_owner
-        name
-        email_id
-        restaurant_id
-        password
-        description
-        restaurant_address_line_one
+      orders {
+        order_id
+        order_status
+        delivery_status
+        order_total
+        tax
+        delivery_cost
+        gratitude
+        sub_total
+        order_delivery_type
+        order_address_line_1
+        order_city
+        order_state
+        order_country
+        order_zipcode
+        notes
+        restaurant_name
+        restaurant_image_file_path
         restaurant_city
-        restaurant_state
-        restaurant_country
-        restaurant_zipcode
-        image_file_path
-        phone_num
-        restaurant_start_time
-        restaurant_end_time
-        restaurant_week_start
-        restaurant_week_end
-        national_brand
-        delivery_type
+        customer_name
+        customer_id
+        restaurant_id
+        create_time
+        dishes {
+          _id
+          dish_name
+          quantity
+          price
+        }
       }
     }
   }
@@ -500,6 +509,12 @@ const GET_COMPLETED_ORDERS = gql`
         customer_name
         customer_id
         restaurant_id
+        dishes {
+          _id
+          dish_name
+          quantity
+          price
+        }
       }
     }
   }
@@ -532,7 +547,7 @@ const GET_NEW_ORDERS = gql`
         customer_id
         restaurant_id
         dishes {
-          dish_id
+          _id
           dish_name
           quantity
           price
@@ -541,12 +556,152 @@ const GET_NEW_ORDERS = gql`
     }
   }
 `;
+
+const NEW_ORDERS_UPDATE = gql`
+  query ordersNewOrderUpdate(
+    $order_status: String
+    $restaurant_id: String
+    $order_id: String
+    $delivery_status: String
+  ) {
+    ordersNewOrderUpdate(
+      order_status: $order_status
+      restaurant_id: $restaurant_id
+      order_id: $order_id
+      delivery_status: $delivery_status
+    ) {
+      status
+      errCode
+      orders {
+        order_id
+        order_status
+        delivery_status
+        order_total
+        tax
+        delivery_cost
+        gratitude
+        sub_total
+        order_delivery_type
+        order_address_line_1
+        order_city
+        order_state
+        order_country
+        order_zipcode
+        notes
+        restaurant_name
+        restaurant_image_file_path
+        restaurant_city
+        customer_name
+        customer_id
+        restaurant_id
+        dishes {
+          _id
+          dish_name
+          quantity
+          price
+        }
+      }
+    }
+  }
+`;
+
+const GET_CUSTOMERS_RESTAURANT_DETAILS = gql`
+  query getRestaurantDetails($restaurant_id: String) {
+    getRestaurantDetails(restaurant_id: $restaurant_id) {
+      status
+      errCode
+      restaurentDetails {
+        is_owner
+        restaurant_id
+        name
+        email_id
+        password
+        description
+        restaurant_address_line_one
+        restaurant_city
+        restaurant_state
+        restaurant_country
+        restaurant_zipcode
+        restaurant_zipcode
+        image_file_path
+        restaurant_start_time
+        restaurant_end_time
+        delivery_type
+      }
+    }
+  }
+`;
+
+const GET_CUSTOMERS_RESTAURANT_DISHES = gql`
+  query getAllDishes($restaurant_id: String) {
+    getAllDishes(restaurant_id: $restaurant_id) {
+      status
+      errCode
+      allDishes {
+        name
+        dish_id
+        description
+        ingredients
+        price
+        image_file_path
+        category
+        dish_type
+        cuisine_type
+        dish_start_time
+        dish_end_time
+        isActive
+        restaurant_id
+      }
+    }
+  }
+`;
+
+const CUSTOMER_ORDER_PLACED = gql`
+  query ordersNewOrderAdd(
+    $customerName: String
+    $restaurentId: String
+    $restaurant_name: String
+    $restaurant_city: String
+    $restaurant_image: String
+    $customerId: String
+    $order_status: String
+    $sub_total: Float
+    $delivery_status: String
+    $order_total: Float
+    $tax: Float
+    $delivery_cost: Float
+    $gratitude: Float
+    $sub_total: Float
+    $order_delivery_type: String
+    $order_address_line_1: String
+    $order_city: String
+    $order_state: String
+    $order_country: String
+    $order_zipcode: String
+    $dishes: Array
+  ) {
+    ordersNewOrderAdd(
+      customerName: $customerName
+      restaurentId: $restaurentId
+      sub_total: $sub_total
+      delivery_status: $delivery_status
+      order_total: $order_total
+    ) {
+      status
+      errCode
+      orders {
+        price
+      }
+    }
+  }
+`;
+
 export {
   LOGIN_QUERY,
   GET_ALL_RESTAURANTS_QUERY,
   SIGN_UP_CUSTOMER,
   UPDATE_CUSTOMER,
-  CUSTOMER_ORDERS,
+  GET_CUSTOMER_ORDERS,
   SIGN_UP_OWNER,
   UPDATE_OWNER,
   ALL_DISHES_LIST,
@@ -555,4 +710,8 @@ export {
   UPDATE_DISH,
   GET_NEW_ORDERS,
   GET_COMPLETED_ORDERS,
+  NEW_ORDERS_UPDATE,
+  GET_CUSTOMERS_RESTAURANT_DETAILS,
+  GET_CUSTOMERS_RESTAURANT_DISHES,
+  CUSTOMER_ORDER_PLACED,
 };

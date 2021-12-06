@@ -36,6 +36,7 @@ import {
   UPDATE_DISH,
   GET_NEW_ORDERS,
   GET_COMPLETED_ORDERS,
+  NEW_ORDERS_UPDATE,
 } from "../Queries/queries";
 import ApolloClientProvider from "./ApolloClientProvider";
 
@@ -139,36 +140,41 @@ export const ownerNewOrders = () => async (dispatch) => {
   }
 };
 
+
 export const ownerNewOrdersUpdate =
   (updateOrderDetails) => async (dispatch) => {
-    const { restaurant_id: restaurantId } = JSON.parse(
-      localStorage.getItem("user")
-    );
-    console.log(" restaurantId: ", restaurantId);
-    // if (!restaurantId) return;
+    const { restaurant_id } = JSON.parse(localStorage.getItem("user"));
+
+    if (!restaurant_id) return;
     axios.defaults.withCredentials = true;
-    axios.defaults.headers.common["x-auth-token"] = getToken();
-    axios
-      .post(
-        `${backendServer}/ubereats/orders/neworders/update`,
-        updateOrderDetails
-      )
-      .then((response) => {
-        if (response.data.status === "UPDATED_ORDER") {
-          dispatch({
-            type: OWNER_ORDER_UPDATE,
-            payload: response.data.orders,
-          });
-        }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data) {
-          dispatch({
-            type: OWNER_ORDER_UPDATE_FAILURE,
-            payload: error.response.data,
-          });
-        }
+
+    try {
+      const { client } = ApolloClientProvider;
+      const res = client.query({
+        query: NEW_ORDERS_UPDATE,
+        variables: updateOrderDetails,
       });
+      const response = await res;
+      const { data } = response;
+      const { ordersNewOrderUpdate } = data;
+      const { errCode } = ordersNewOrderUpdate;
+      console.log(
+        " allDishes after dish added: ",
+        response.data.ordersNewOrderUpdate
+      );
+      if ((errCode && errCode === 400) || errCode === 500) {
+        throw new Error("Sign Up Error");
+      }
+      dispatch({
+        type: OWNER_ORDER_UPDATE,
+        payload: response.data.ordersNewOrderUpdate.orders,
+      });
+    } catch (error) {
+      dispatch({
+        type: OWNER_ORDER_UPDATE_FAILURE,
+        payload: error,
+      });
+    }
   };
 
 export const ownerDeliveredOrders = () => async (dispatch) => {
@@ -185,15 +191,18 @@ export const ownerDeliveredOrders = () => async (dispatch) => {
     // console.log("Sign UP data ", signupdata);
     const response = await res;
     const { data } = response;
-    const { getNewOrders } = data;
-    const { errCode, orders, status } = getNewOrders;
-    console.log(" allDishes after dish added: ", response.data.getNewOrders);
+    const { getCompletedOrders } = data;
+    const { errCode, orders, status } = getCompletedOrders;
+    console.log(
+      " allDishes after dish added: ",
+      response.data.getCompletedOrders
+    );
     if ((errCode && errCode === 400) || errCode === 500) {
       throw new Error("Sign Up Error");
     }
     dispatch({
       type: OWNER_DELIVERED_ORDER,
-      payload: response.data.getNewOrders.orders,
+      payload: response.data.getCompletedOrders.orders,
     });
   } catch (error) {
     dispatch({

@@ -18,7 +18,7 @@ export const restaurants = () => async (dispatch) => {
     console.log("Respose from gaphql quey", response);
     const { data } = response;
     const { getRestaurants } = data;
-    const { errCode, allRestaurants, status } = getRestaurants;
+    const { errCode, allRestaurants } = getRestaurants;
     console.log("All Restaurants ", allRestaurants);
     if ((errCode && errCode === 400) || errCode === 500) {
       throw new Error("SignIn Error");

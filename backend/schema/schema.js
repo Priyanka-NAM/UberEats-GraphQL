@@ -64,6 +64,16 @@ const DishesType = new GraphQLObjectType({
   }),
 });
 
+const OrderDishesType = new GraphQLObjectType({
+  name: "OrderDishes",
+  fields: () => ({
+    _id: { type: GraphQLString },
+    dish_name: { type: GraphQLString },
+    quantity: { type: GraphQLFloat },
+    price: { type: GraphQLFloat },
+  }),
+});
+
 const OrderDetailsType = new GraphQLObjectType({
   name: "OrderDetails",
   fields: () => ({
@@ -74,8 +84,8 @@ const OrderDetailsType = new GraphQLObjectType({
     delivery_cost: { type: GraphQLFloat },
     gratitude: { type: GraphQLFloat },
     sub_total: { type: GraphQLFloat },
-    // create_time: { type: Date, default: Date.now() },
-    // update_time: { type: Date, default: Date.now() },
+    create_time: { type: GraphQLString },
+    update_time: { type: GraphQLString },
     order_delivery_type: { type: GraphQLString },
     order_address_line_1: { type: GraphQLString },
     order_city: { type: GraphQLString },
@@ -89,10 +99,15 @@ const OrderDetailsType = new GraphQLObjectType({
     customer_name: { type: GraphQLString },
     customer_id: { type: GraphQLString },
     restaurant_id: { type: GraphQLString },
-    dishes: { type: new GraphQLList(DishesType) },
+    dishes: { type: new GraphQLList(OrderDishesType) },
     order_id: { type: GraphQLString },
     // dishes: [
-    //   { dish_id: String, dish_name: String, quantity: Number, price: Number },
+    //   {
+    //     dish_id: { type: GraphQLString },
+    //     dish_name: { type: GraphQLString },
+    //     quantity: { type: GraphQLFloat },
+    //     price: { type: GraphQLFloat },
+    //   },
     // ],
   }),
 });
@@ -1187,7 +1202,7 @@ const RootQuery = new GraphQLObjectType({
           });
         }
         const newOrder = new OrderDetails({
-          restaurant_id: args.restaurant_id,
+          restaurant_id: args.restaurentId,
           customer_name: args.customerName,
           restaurant_name: args.restaurant_name,
           restaurant_city: args.restaurant_city,

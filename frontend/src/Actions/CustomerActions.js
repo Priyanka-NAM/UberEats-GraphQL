@@ -21,7 +21,12 @@ import {
 import backendServer from "../backEndConfig";
 import { getToken } from "../components/Service/authService";
 import ApolloClientProvider from "./ApolloClientProvider";
-import { SIGN_UP_CUSTOMER, UPDATE_CUSTOMER } from "../Queries/queries";
+import {
+  SIGN_UP_CUSTOMER,
+  UPDATE_CUSTOMER,
+  GET_CUSTOMER_ORDERS,
+  CUSTOMER_ORDER_PLACED,
+} from "../Queries/queries";
 
 export const addCustomer = (signupdata) => async (dispatch) => {
   try {
@@ -95,48 +100,72 @@ export const updateCustomer = (customerUpdateData) => async (dispatch) => {
 
 export const customerOrders = () => async (dispatch) => {
   const { customer_id } = JSON.parse(localStorage.getItem("user"));
+
+  if (!customer_id) return;
+  axios.defaults.withCredentials = true;
+  axios.defaults.headers.common["x-auth-token"] = getToken();
   try {
-    axios.defaults.withCredentials = true;
-    axios.defaults.headers.common["x-auth-token"] = getToken();
-    const res = await axios.get(
-      `${backendServer}/ubereats/orders/orderstatus/customer/${customer_id}`
-    );
+    const { client } = ApolloClientProvider;
+    const res = client.query({
+      query: GET_CUSTOMER_ORDERS,
+      variables: { customer_id },
+    });
+    // console.log("Sign UP data ", signupdata);
     const response = await res;
+    const { data } = response;
+    const { getOrderStatus } = data;
+    const { errCode, orders, status } = getOrderStatus;
+    console.log(" allDishes after dish added: ", response.data.getOrderStatus);
+    if ((errCode && errCode === 400) || errCode === 500) {
+      throw new Error("Sign Up Error");
+    }
     dispatch({
       type: CUSTOMER_ORDERS,
-      payload: response.data.orders,
+      payload: response.data.getOrderStatus.orders,
     });
-  } catch (err) {
+  } catch (error) {
     dispatch({
       type: CUSTOMER_ORDERS_FAILURE,
-      payload: err.response,
+      payload: error,
     });
   }
 };
 
 export const customerOrderPlaced = (customerNewOrder) => async (dispatch) => {
-  const { customer_id: customerId, name: customerName } = JSON.parse(
+  const { customer_id, name: customerName } = JSON.parse(
     localStorage.getItem("user")
   );
-  if (!customerId) return;
+  if (!customer_id) return;
   try {
-    const postInput = { ...customerNewOrder, customerId, customerName };
+    const postInput = { ...customerNewOrder, customer_id, customerName };
     console.log("Inside Customer New Order Action");
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["x-auth-token"] = getToken();
-    const res = await axios.post(
-      `${backendServer}/ubereats/orders/customer/neworder`,
-      postInput
-    );
+    const { client } = ApolloClientProvider;
+    const res = client.query({
+      query: CUSTOMER_ORDER_PLACED,
+      variables: postInput,
+    });
+
     const response = await res;
+    const { data } = response;
+    const { ordersNewOrderAdd } = data;
+    const { errCode, orders, status } = ordersNewOrderAdd;
+    console.log(
+      " allDishes after dish added: ",
+      response.data.ordersNewOrderAdd
+    );
+    if ((errCode && errCode === 400) || errCode === 500) {
+      throw new Error("Sign Up Error");
+    }
     dispatch({
       type: CUSTOMER_NEWORDER,
-      payload: response.data,
+      payload: response.data.ordersNewOrderAdd.orders,
     });
   } catch (err) {
     dispatch({
       type: CUSTOMER_NEWORDER_FAILURE,
-      payload: err.response,
+      payload: err,
     });
   }
 };

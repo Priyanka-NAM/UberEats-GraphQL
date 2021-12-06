@@ -13,6 +13,11 @@ import RestaBanner from "./RestaurentPageIcons/RestaBanner";
 import "../Styles/Home.css";
 import MenuCard from "./RestaurentPageIcons/MenuCard";
 import backendServer from "../../backEndConfig";
+import ApolloClientProvider from "../../Actions/ApolloClientProvider";
+import {
+  GET_CUSTOMERS_RESTAURANT_DETAILS,
+  GET_CUSTOMERS_RESTAURANT_DISHES,
+} from "../../Queries/queries";
 
 class RestaurentHome extends Component {
   constructor(props) {
@@ -27,50 +32,106 @@ class RestaurentHome extends Component {
     const { restaurant } = state;
     const { restaurant_id } = restaurant;
     axios.defaults.headers.common.authorization = getToken();
-    axios
-      .get(
-        `${backendServer}/ubereats/customerrestaurant/restaurantdetails/${restaurant_id}`
-      )
-      .then((response) => {
-        if (response.data) {
-          if (response.data.status !== "RESTAURANT_DETAILS") {
-            this.setState({
-              restaurentDetails: [],
-            });
-          } else {
-            this.setState({
-              restaurentDetails: response.data.restaurentDetails,
-            });
-            console.log("Restaurant Details Request Successful");
-          }
+    async function getCustomerRestDetails() {
+      try {
+        axios.defaults.headers.common["x-auth-token"] = getToken();
+
+        const { client } = ApolloClientProvider;
+        const res = client.query({
+          query: GET_CUSTOMERS_RESTAURANT_DETAILS,
+          variables: { restaurant_id },
+        });
+
+        const response = await res;
+        const { data } = response;
+        const { getRestaurantDetails } = data;
+        const { errCode } = getRestaurantDetails;
+        if ((errCode && errCode === 400) || errCode === 500) {
+          throw new Error("Sign Up Error");
         }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data) {
-          console.log("Restaurant Get Error", error.response.data);
-        }
+
+        // if (response.data) {
+        //     this.setState({
+        //       restaurentDetails: [],
+        //     });
+        //   } else {
+        return {
+          restaurentDetails:
+            response.data.getRestaurantDetails.restaurentDetails,
+        };
+        // }
+        // }
+      } catch (error) {
+        console.log("Restaurant Get Error", error);
+        return error;
+      }
+    }
+
+    getCustomerRestDetails().then((response) => {
+      this.setState({
+        restaurentDetails: response.restaurentDetails,
       });
-    axios
-      .get(`${backendServer}/ubereats/dishes/alldishes/${restaurant_id}`)
-      .then((response) => {
-        if (response.data) {
-          if (response.data.status !== "ALL_DISHES") {
-            this.setState({
-              dishesList: [],
-            });
-          } else {
-            this.setState({
-              dishesList: response.data.allDishes,
-            });
-            console.log("Dish Details Request Successful");
-          }
+    });
+
+    async function getCustomerRestDishDetails() {
+      try {
+        axios.defaults.headers.common["x-auth-token"] = getToken();
+
+        const { client } = ApolloClientProvider;
+        const res = client.query({
+          query: GET_CUSTOMERS_RESTAURANT_DISHES,
+          variables: { restaurant_id },
+        });
+
+        const response = await res;
+        const { data } = response;
+        const { getAllDishes } = data;
+        const { errCode } = getAllDishes;
+        if ((errCode && errCode === 400) || errCode === 500) {
+          throw new Error("Sign Up Error");
         }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data) {
-          console.log("Restaurant Get Error", error.response.data);
-        }
+
+        // if (response.data) {
+        //     this.setState({
+        //       restaurentDetails: [],
+        //     });
+        //   } else {
+        return {
+          dishesList: response.data.getAllDishes.allDishes,
+        };
+        // }
+        // }
+      } catch (error) {
+        console.log("Dishes Get Error", error);
+        return error;
+      }
+    }
+
+    getCustomerRestDishDetails().then((response) => {
+      this.setState({
+        dishesList: response.dishesList,
       });
+    });
+
+    // .then((response) => {
+    //   if (response.data) {
+    //     if (response.data.status !== "ALL_DISHES") {
+    //       this.setState({
+    //         dishesList: [],
+    //       });
+    //     } else {
+    //       this.setState({
+    //         dishesList: response.data.allDishes,
+    //       });
+    //       console.log("Dish Details Request Successful");
+    //     }
+    //   }
+    // })
+    // .catch((error) => {
+    //   if (error.response && error.response.data) {
+    //     console.log("Restaurant Get Error", error.response.data);
+    //   }
+    // });
   }
 
   render() {
