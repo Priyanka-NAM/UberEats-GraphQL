@@ -35,13 +35,13 @@ const CustomerDetails = new Schema({
     type: String,
   },
   zipcode: {
-    type: Number,
+    type: String,
   },
   nick_name: {
     type: String,
   },
   phone_num: {
-    type: Number,
+    type: String,
   },
   profile_pic_file_path: {
     type: String,
@@ -90,7 +90,7 @@ const OrderDetails = new Schema({
     type: String,
   },
   order_zipcode: {
-    type: Number,
+    type: String,
   },
   notes: {
     type: String,
@@ -147,13 +147,13 @@ const RestaurantDetails = new Schema({
     type: String,
   },
   restaurant_zipcode: {
-    type: Number,
+    type: String,
   },
   image_file_path: {
     type: String,
   },
   phone_num: {
-    type: Number,
+    type: String,
   },
   restaurant_start_time: {
     type: String,

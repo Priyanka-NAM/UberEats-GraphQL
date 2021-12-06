@@ -77,7 +77,7 @@ class MenuAddEdit extends Component {
   handleEditSave = (e) => {
     const { visibilityCb } = this.props;
     e.preventDefault();
-    console.log("Inside Handle Submit ", this.state);
+    console.log("Inside Handle Submit ");
     const isActive = "true";
     const {
       dishId,

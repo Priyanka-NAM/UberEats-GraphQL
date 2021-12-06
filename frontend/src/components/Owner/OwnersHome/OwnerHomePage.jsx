@@ -22,21 +22,21 @@ class OwnerHomePage extends Component {
   }
 
   componentDidUpdate = (prevprops) => {
-    const { allDishes, ownerDetails } = this.props;
-    if (
-      allDishes !== prevprops.allDishes ||
-      ownerDetails !== prevprops.ownerDetails
-    ) {
-      this.setState({
-        allDishes,
-        ownerDetails,
-      });
-    }
+    // const { allDishes, ownerDetails } = this.props;
+    // if (
+    //   allDishes !== prevprops.allDishes ||
+    //   ownerDetails !== prevprops.ownerDetails
+    // ) {
+    //   this.setState({
+    //     allDishes,
+    //     ownerDetails,
+    //   });
+    // }
   };
 
   render() {
     let restaurentMenu = null;
-    const { allDishes, ownerDetails } = this.state;
+    const { allDishes, ownerDetails } = this.props;
     if (allDishes) {
       restaurentMenu = allDishes.map((dish) => (
         <MenuCard

@@ -22,6 +22,10 @@ class MenuUpdate extends Component {
 
   componentDidMount() {
     this.props.ownerMenu();
+    const { allDishes } = this.props;
+    this.setState({
+      allDishes,
+    });
   }
 
   componentDidUpdate = (prevprops) => {

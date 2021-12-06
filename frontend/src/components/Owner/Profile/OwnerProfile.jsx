@@ -30,12 +30,15 @@ class OwnerProfile extends Component {
 
   componentDidMount = () => {
     this.props.getOwnerProfile();
-    this.setStateFromProps(this.props);
+    console.log("Initial owner Details ", this.props.ownerDetails);
+
+    this.setStateFromProps(this.props.ownerDetails);
   };
 
   componentDidUpdate = (prevprops) => {
     if (this.props.ownerDetails !== prevprops.ownerDetails) {
       const { ownerDetails } = this.props;
+      console.log("Updated owner Details ", ownerDetails);
       this.setStateFromProps(ownerDetails);
       this.setState({
         showAlert: true,
