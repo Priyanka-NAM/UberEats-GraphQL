@@ -93,6 +93,16 @@ class FinalOrder extends Component {
     this.setState({
       showOrderSucess: true,
     });
+
+    const newCartItems = [];
+    for (let i = 0; i < cartItems.length; i += 1) {
+      newCartItems.push({
+        dish_id: cartItems[i].dishDetails.dish_id,
+        price: String(cartItems[i].price),
+        title: cartItems[i].title,
+        quantity: cartItems[i].quantity,
+      });
+    }
     const statusDetails = {
       restaurant_id: restaurantId,
       restaurant_image: restaurantImage,
@@ -100,7 +110,7 @@ class FinalOrder extends Component {
       restaurant_name: restaurantName,
       delivery_status: "Order Received",
       order_status: "Active",
-      cart_items: cartItems,
+      cart_items: newCartItems,
     };
     const CostObject = this.getCostFromCartItems(cartItems);
     let order_delivery_type = "Pickup";
@@ -123,6 +133,7 @@ class FinalOrder extends Component {
       const locationdetails = ChangedDeliveryLocation.split(",");
       [addressLine1, city, state, country, zipcode] = [...locationdetails];
     }
+
     const orderPostInput = {
       ...statusDetails,
       ...CostObject,
@@ -134,6 +145,9 @@ class FinalOrder extends Component {
       order_zipcode: zipcode,
       notes: notes,
     };
+
+    console.log("Order Post Input ", orderPostInput);
+
     this.props.customerOrderPlaced(orderPostInput);
     this.props.emptyCart();
   };

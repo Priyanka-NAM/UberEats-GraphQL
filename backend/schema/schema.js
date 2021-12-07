@@ -22,6 +22,7 @@ const {
   GraphQLNonNull,
   GraphQLUnionType,
   GraphQLFloat,
+  GraphQLInputObjectType,
 } = graphql;
 
 const CustomerDetailsType = new GraphQLObjectType({
@@ -69,22 +70,43 @@ const DishesType = new GraphQLObjectType({
 const OrderDishesType = new GraphQLObjectType({
   name: "OrderDishes",
   fields: () => ({
-    _id: { type: GraphQLString },
+    dish_id: { type: GraphQLString },
     dish_name: { type: GraphQLString },
     quantity: { type: GraphQLFloat },
     price: { type: GraphQLFloat },
   }),
 });
 
-// const cart_itemsType = new GraphQLObjectType{
-//   name: "cart_itemsType",
-//   fields: () => ({
-//     dish_id: { type: GraphQLString },
-//     title: { type: GraphQLString },
-//     quantity: { type: GraphQLFloat },
-//     price: { type: GraphQLFloat },
-//   }),
-// });
+const DishesInputType = new GraphQLInputObjectType({
+  name: "DishesInput",
+  fields: () => ({
+    dish_id: { type: GraphQLString },
+    name: { type: GraphQLString },
+    description: { type: GraphQLString },
+    ingredients: { type: GraphQLString },
+    price: { type: GraphQLFloat },
+    image_file_path: { type: GraphQLString },
+    category: { type: GraphQLString },
+    dish_type: { type: GraphQLString },
+    cuisine_type: { type: GraphQLString },
+    restaurant_id: { type: GraphQLString },
+    dish_start_time: { type: GraphQLString },
+    dish_end_time: { type: GraphQLString },
+    isActive: { type: GraphQLString },
+    create_time: { type: GraphQLString },
+    update_time: { type: GraphQLString },
+  }),
+});
+
+const CartItemsType = new GraphQLInputObjectType({
+  name: "CartItemsType",
+  fields: () => ({
+    dish_id: { type: GraphQLString },
+    title: { type: GraphQLString },
+    quantity: { type: GraphQLFloat },
+    price: { type: GraphQLString },
+  }),
+});
 
 const OrderDetailsType = new GraphQLObjectType({
   name: "OrderDetails",
@@ -675,6 +697,7 @@ const RootQuery = new GraphQLObjectType({
         return new Promise(function (resolve, reject) {
           OrderDetails.find({ customer_id: args.customer_id }, (err, data) => {
             if (err) {
+              console.log("Error in get Customer Orders ", err);
               resolve({
                 errCode: 400,
                 status: "CUSTOMER_ID_NULL",
@@ -796,8 +819,6 @@ const RootQuery = new GraphQLObjectType({
         });
       },
     },
-
-    
   },
 });
 
@@ -943,6 +964,7 @@ const Mutation = new GraphQLObjectType({
         },
       },
       resolve(parent, args) {
+        console.log();
         const password = args.password;
         const hashedPassword = md5(password);
         const newUser = new RestaurantDetails({
@@ -1374,19 +1396,19 @@ const Mutation = new GraphQLObjectType({
           type: GraphQLString,
         },
         order_total: {
-          type: GraphQLFloat,
+          type: GraphQLString,
         },
         tax: {
           type: GraphQLString,
         },
         delivery_cost: {
-          type: GraphQLString,
+          type: GraphQLFloat,
         },
         gratitude: {
-          type: GraphQLString,
+          type: GraphQLFloat,
         },
         sub_total: {
-          type: GraphQLFloat,
+          type: GraphQLString,
         },
         order_delivery_type: {
           type: GraphQLString,
@@ -1406,15 +1428,15 @@ const Mutation = new GraphQLObjectType({
         order_zipcode: {
           type: GraphQLString,
         },
-        // cart_items: {
-        //   // type: new GraphQLList(cart_itemsType),
-        // },
+        cart_items: {
+          type: new GraphQLList(CartItemsType),
+        },
         // dishes: {
         //   type: GraphQLString,
         // },
-        notes: {
-          type: GraphQLString,
-        },
+        // notes: {
+        //   type: GraphQLString,
+        // },
       },
       resolve(parent, args) {
         let dishes = [];
@@ -1453,6 +1475,7 @@ const Mutation = new GraphQLObjectType({
         return new Promise(function (resolve, reject) {
           newOrder.save((err, data) => {
             if (err) {
+              console.log("Error in Order Placed Mutation ", err);
               resolve({
                 errCode: 400,
                 status: "ORDER_CREATION_FAILED",

@@ -101,6 +101,7 @@ export const updateCustomer = (customerUpdateData) => async (dispatch) => {
 
 export const customerOrders = () => async (dispatch) => {
   const { customer_id } = JSON.parse(localStorage.getItem("user"));
+  console.log(" customer_id: ", customer_id);
 
   if (!customer_id) return;
   axios.defaults.withCredentials = true;
@@ -140,7 +141,7 @@ export const customerOrderPlaced = (customerNewOrder) => async (dispatch) => {
   if (!customer_id) return;
   try {
     const postInput = { ...customerNewOrder, customer_id, customerName };
-    console.log("Inside Customer New Order Action");
+    console.log("Inside Customer New Order Action", postInput);
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["x-auth-token"] = getToken();
     const { client } = ApolloClientProvider;

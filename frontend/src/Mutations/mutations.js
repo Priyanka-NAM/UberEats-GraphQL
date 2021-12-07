@@ -371,27 +371,26 @@ const NEW_ORDERS_UPDATE = gql`
 
 const CUSTOMER_ORDER_PLACED = gql`
   mutation ordersNewOrderAdd(
-    $customerName: String
     $restaurentId: String
     $restaurant_name: String
     $restaurant_city: String
     $restaurant_image: String
-    $customerId: String
+    $customer_id: String
+    $customerName: String
     $order_status: String
-    $sub_total: Float
     $delivery_status: String
-    $order_total: Float
-    $tax: Float
+    $order_total: String
+    $tax: String
     $delivery_cost: Float
     $gratitude: Float
-    $sub_total: Float
+    $sub_total: String
     $order_delivery_type: String
     $order_address_line_1: String
     $order_city: String
     $order_state: String
     $order_country: String
     $order_zipcode: String
-    $cart_items: [cart_itemsType]
+    $cart_items: [CartItemsType]
   ) {
     ordersNewOrderAdd(
       customerName: $customerName
@@ -399,7 +398,7 @@ const CUSTOMER_ORDER_PLACED = gql`
       restaurant_name: $restaurant_name
       restaurant_city: $restaurant_city
       restaurant_image: $restaurant_image
-      customerId: $customerId
+      customerId: $customer_id
       order_status: $order_status
       sub_total: $sub_total
       delivery_status: $delivery_status
@@ -407,20 +406,45 @@ const CUSTOMER_ORDER_PLACED = gql`
       tax: $tax
       delivery_cost: $delivery_cost
       gratitude: $gratitude
-      sub_total: $sub_total
       order_delivery_type: $order_delivery_type
       order_address_line_1: $order_address_line_1
       order_city: $order_city
       order_state: $order_state
       order_country: $order_country
       order_zipcode: $order_zipcode
-      dishes: $dishes
       cart_items: $cart_items
     ) {
       status
       errCode
       orders {
-        price
+        order_id
+        order_status
+        delivery_status
+        order_total
+        tax
+        delivery_cost
+        gratitude
+        sub_total
+        order_delivery_type
+        order_address_line_1
+        order_city
+        order_state
+        order_country
+        order_zipcode
+        notes
+        restaurant_name
+        restaurant_image_file_path
+        restaurant_city
+        customer_name
+        customer_id
+        restaurant_id
+        create_time
+        dishes {
+          dish_id
+          dish_name
+          quantity
+          price
+        }
       }
     }
   }
