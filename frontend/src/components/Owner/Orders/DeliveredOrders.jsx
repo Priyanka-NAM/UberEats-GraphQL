@@ -22,6 +22,10 @@ class DeliveredOrders extends Component {
 
   componentDidMount() {
     this.props.ownerDeliveredOrders();
+    console.log(
+      "******************* Delivered Orders ***************** ",
+      this.state.DeliveredOrders
+    );
   }
 
   componentDidUpdate = (prevprops) => {

@@ -1,45 +1,5 @@
 import { gql } from "apollo-boost";
 
-const LOGIN_QUERY = gql`
-  query LoginQuery($email: String, $password: String) {
-    login(email: $email, password: $password) {
-      status
-      errCode
-      token
-      user {
-        is_owner
-        name
-        email_id
-        password
-        date_of_birth
-        address_line_1
-        city
-        state
-        country
-        zipcode
-        nick_name
-        profile_pic_file_path
-        customer_id
-        restaurant_id
-        description
-        restaurant_address_line_one
-        restaurant_city
-        restaurant_state
-        restaurant_country
-        restaurant_zipcode
-        image_file_path
-        phone_num
-        restaurant_start_time
-        restaurant_end_time
-        restaurant_week_start
-        restaurant_week_end
-        national_brand
-        delivery_type
-      }
-    }
-  }
-`;
-
 const GET_ALL_RESTAURANTS_QUERY = gql`
   query getRestaurantsQuery {
     getRestaurants {
@@ -289,7 +249,6 @@ const GET_CUSTOMERS_RESTAURANT_DISHES = gql`
 `;
 
 export {
-  LOGIN_QUERY,
   GET_ALL_RESTAURANTS_QUERY,
   GET_CUSTOMER_ORDERS,
   ALL_DISHES_LIST,

@@ -5,7 +5,7 @@ import {
   USER_SIGNOUT,
 } from "./types";
 import backendServer from "../backEndConfig";
-import { LOGIN_QUERY } from "../Queries/queries";
+import { LOGIN_QUERY } from "../Mutations/mutations";
 import ApolloClientProvider from "./ApolloClientProvider";
 
 export const userSignin = (signindata) => async (dispatch) => {

@@ -160,13 +160,14 @@ export const ownerNewOrdersUpdate =
       const { data } = response;
       const { ordersNewOrderUpdate } = data;
       const { errCode } = ordersNewOrderUpdate;
-      console.log(
-        " allDishes after dish added: ",
-        response.data.ordersNewOrderUpdate
-      );
+      // console.log(
+      //   " allDishes after dish added: ",
+      //   response.data.ordersNewOrderUpdate
+      // );
       if ((errCode && errCode === 400) || errCode === 500) {
         throw new Error("Sign Up Error");
       }
+      console.log("******* Response Object ************", response);
       dispatch({
         type: OWNER_ORDER_UPDATE,
         payload: response.data.ordersNewOrderUpdate.orders,

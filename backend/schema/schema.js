@@ -16,11 +16,8 @@ const {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
-  GraphQLID,
   GraphQLInt,
   GraphQLList,
-  GraphQLNonNull,
-  GraphQLUnionType,
   GraphQLFloat,
   GraphQLInputObjectType,
 } = graphql;
@@ -41,7 +38,6 @@ const CustomerDetailsType = new GraphQLObjectType({
     nick_name: { type: GraphQLString },
     phone_num: { type: GraphQLString },
     profile_pic_file_path: { type: GraphQLString },
-    // favorite_restaurants: { type: GraphQLList },
     customer_id: { type: GraphQLString },
   }),
 });
@@ -135,14 +131,6 @@ const OrderDetailsType = new GraphQLObjectType({
     restaurant_id: { type: GraphQLString },
     dishes: { type: new GraphQLList(OrderDishesType) },
     order_id: { type: GraphQLString },
-    // dishes: [
-    //   {
-    //     dish_id: { type: GraphQLString },
-    //     dish_name: { type: GraphQLString },
-    //     quantity: { type: GraphQLFloat },
-    //     price: { type: GraphQLFloat },
-    //   },
-    // ],
   }),
 });
 const RestaurantDetailsType = new GraphQLObjectType({
@@ -450,89 +438,6 @@ const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   description: "Root Query",
   fields: {
-    login: {
-      type: signInOutputType,
-      args: {
-        email: {
-          type: GraphQLString,
-        },
-        password: {
-          type: GraphQLString,
-        },
-      },
-      resolve(parent, args) {
-        const hashedPassword = md5(args.password);
-        console.log("Args from frontend ", args);
-        return new Promise(function (resolve, reject) {
-          RestaurantDetails.findOne(
-            { email_id: args.email, password: hashedPassword },
-            (error, result) => {
-              if (error) {
-                console.log(
-                  "Fetching restaurant details error in SignIn request handler",
-                  error
-                );
-                resolve({ errCode: 500 });
-                return;
-              }
-              if (result) {
-                let modifiedData = JSON.parse(JSON.stringify(result));
-                modifiedData.restaurant_id = result._id;
-                const token = jwt.sign({ _id: result }, secret);
-
-                console.log("Restaurant Owner Authentication Success");
-                resolve({
-                  status: "Authentication Successful",
-                  user: modifiedData,
-                  token,
-                });
-                return;
-              } else {
-                CustomerDetails.findOne(
-                  { email_id: args.email, password: hashedPassword },
-                  (error, result) => {
-                    if (error) {
-                      console.log(
-                        "Fetching customer details error in SignIn request handler",
-                        error
-                      );
-                      resolve({ errCode: 500 });
-                      return;
-                    }
-                    console.log("Result from CustomerDetails ==>", result);
-                    if (result) {
-                      let modifiedCustomerData = JSON.parse(
-                        JSON.stringify(result)
-                      );
-                      modifiedCustomerData.customer_id = result._id;
-                      const token = jwt.sign({ _id: result }, secret);
-
-                      console.log("Customer Authentication Success");
-                      resolve({
-                        status: "Authentication Successful",
-                        user: modifiedCustomerData,
-                        token,
-                      });
-                      return;
-                    } else {
-                      console.log(
-                        "Authenticaion Failure - SignIn Request Handler"
-                      );
-                      resolve({
-                        errCode: 400,
-                        status: "Authentication Failed",
-                      });
-                      return;
-                    }
-                  }
-                );
-              }
-            }
-          );
-        });
-      },
-    },
-
     getRestaurants: {
       type: getRestaurantsOutputType,
       args: {},
@@ -588,6 +493,7 @@ const RootQuery = new GraphQLObjectType({
                 modifiedDish.dish_id = dish._id;
                 return modifiedDish;
               });
+              console.log(modifiedDishes);
               resolve({
                 status: "ALL_DISHES",
                 allDishes: modifiedDishes,
@@ -734,6 +640,7 @@ const RootQuery = new GraphQLObjectType({
               }
               let modifiedData = JSON.parse(JSON.stringify(restaurantdata));
               modifiedData.restaurant_id = restaurantdata._id;
+              console.log(modifiedData);
               resolve({
                 status: "OWNER_PROFILE_DETAILS",
                 user: modifiedData,
@@ -825,6 +732,90 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: "mutation",
   fields: {
+    login: {
+      type: signInOutputType,
+      args: {
+        email: {
+          type: GraphQLString,
+        },
+        password: {
+          type: GraphQLString,
+        },
+      },
+      resolve(parent, args) {
+        const hashedPassword = md5(args.password);
+        console.log(args);
+        return new Promise(function (resolve, reject) {
+          RestaurantDetails.findOne(
+            { email_id: args.email, password: hashedPassword },
+            (error, result) => {
+              if (error) {
+                console.log(
+                  "Fetching restaurant details error in SignIn request handler",
+                  error
+                );
+                resolve({ errCode: 500 });
+                return;
+              }
+              if (result) {
+                let modifiedData = JSON.parse(JSON.stringify(result));
+                modifiedData.restaurant_id = result._id;
+                const token = jwt.sign({ _id: result }, secret);
+                console.log(modifiedData);
+                console.log("Restaurant Owner Authentication Success");
+                resolve({
+                  status: "Authentication Successful",
+                  user: modifiedData,
+                  token,
+                });
+                return;
+              } else {
+                CustomerDetails.findOne(
+                  { email_id: args.email, password: hashedPassword },
+                  (error, result) => {
+                    if (error) {
+                      console.log(
+                        "Fetching customer details error in SignIn request handler",
+                        error
+                      );
+                      resolve({ errCode: 500 });
+                      return;
+                    }
+                    console.log("Result from CustomerDetails ==>", result);
+                    if (result) {
+                      let modifiedCustomerData = JSON.parse(
+                        JSON.stringify(result)
+                      );
+                      modifiedCustomerData.customer_id = result._id;
+                      const token = jwt.sign({ _id: result }, secret);
+
+                      console.log("Customer Authentication Success");
+                      console.log(modifiedCustomerData);
+                      resolve({
+                        status: "Authentication Successful",
+                        user: modifiedCustomerData,
+                        token,
+                      });
+                      return;
+                    } else {
+                      console.log(
+                        "Authenticaion Failure - SignIn Request Handler"
+                      );
+                      resolve({
+                        errCode: 400,
+                        status: "Authentication Failed",
+                      });
+                      return;
+                    }
+                  }
+                );
+              }
+            }
+          );
+        });
+      },
+    },
+
     profileOwner: {
       type: profileOwnerOutputType,
       args: {
@@ -1170,13 +1161,14 @@ const Mutation = new GraphQLObjectType({
             } else {
               newUser.save((err, data) => {
                 if (err) {
-                  console.log("********************", err);
                   resolve({ errCode: 500, status: "Test" });
                   return;
                 } else {
                   let modifiedData = JSON.parse(JSON.stringify(data));
                   modifiedData.customer_id = data._id;
                   const token = jwt.sign({ _id: data }, secret);
+                  console.log(args);
+                  console.log(modifiedData);
                   resolve({
                     status: "USER_ADDED",
                     user: modifiedData,
@@ -1559,6 +1551,7 @@ const Mutation = new GraphQLObjectType({
                       });
                       return;
                     }
+                    console.log(addOrderIds(allorders));
                     resolve({
                       status: "UPDATED_ORDER",
                       orders: addOrderIds(allorders),

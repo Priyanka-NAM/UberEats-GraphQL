@@ -131,7 +131,7 @@ class OrderDetailsDC extends Component {
               className=' d-flex justify-content-between align-items-center'
               style={{ paddingBottom: "10px" }}>
               Subtotal
-              <span>${orderTotal}</span>
+              <span>${subTotal}</span>
             </li>
             <li
               className=' d-flex justify-content-between align-items-center'
@@ -155,7 +155,7 @@ class OrderDetailsDC extends Component {
               className='d-flex justify-content-between align-items-center'
               style={{ paddingBottom: "10px" }}>
               Total
-              <span>${subTotal}</span>
+              <span>${orderTotal}</span>
             </li>
           </ul>
         </Row>
