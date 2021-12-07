@@ -97,37 +97,6 @@ const UPDATE_CUSTOMER = gql`
   }
 `;
 
-const CUSTOMER_ORDERS_PLACED = gql`
-  mutation getRestaurantsmutation {
-    getRestaurants {
-      status
-      errCode
-      allRestaurants {
-        is_search_result
-        is_owner
-        name
-        email_id
-        restaurant_id
-        password
-        description
-        restaurant_address_line_one
-        restaurant_city
-        restaurant_state
-        restaurant_country
-        restaurant_zipcode
-        image_file_path
-        phone_num
-        restaurant_start_time
-        restaurant_end_time
-        restaurant_week_start
-        restaurant_week_end
-        national_brand
-        delivery_type
-      }
-    }
-  }
-`;
-
 const SIGN_UP_OWNER = gql`
   mutation signUpOwner(
     $name: String
@@ -459,7 +428,4 @@ export {
   UPDATE_DISH,
   NEW_ORDERS_UPDATE,
   CUSTOMER_ORDER_PLACED,
-  //   OWNER_IMAGE_UPLOAD,
-  //   DISHES_IMAGE_UPLOAD,
-  //   CUSTOMER_IMAGE_UPLOAD,
 };
