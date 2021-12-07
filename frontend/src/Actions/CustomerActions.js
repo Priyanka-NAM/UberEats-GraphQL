@@ -21,12 +21,13 @@ import {
 import backendServer from "../backEndConfig";
 import { getToken } from "../components/Service/authService";
 import ApolloClientProvider from "./ApolloClientProvider";
+import { GET_CUSTOMER_ORDERS } from "../Queries/queries";
+
 import {
   SIGN_UP_CUSTOMER,
   UPDATE_CUSTOMER,
-  GET_CUSTOMER_ORDERS,
   CUSTOMER_ORDER_PLACED,
-} from "../Queries/queries";
+} from "../Mutations/mutations";
 
 export const addCustomer = (signupdata) => async (dispatch) => {
   try {
@@ -135,6 +136,7 @@ export const customerOrderPlaced = (customerNewOrder) => async (dispatch) => {
   const { customer_id, name: customerName } = JSON.parse(
     localStorage.getItem("user")
   );
+  console.log("customerNewOrder", customerNewOrder);
   if (!customer_id) return;
   try {
     const postInput = { ...customerNewOrder, customer_id, customerName };

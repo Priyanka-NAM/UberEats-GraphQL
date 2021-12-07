@@ -10,6 +10,12 @@ import {
 } from "./types";
 import backendServer from "../backEndConfig";
 import { getToken } from "../components/Service/authService";
+import ApolloClientProvider from "./ApolloClientProvider";
+// import {
+//   OWNER_IMAGE_UPLOAD,
+//   DISHES_IMAGE_UPLOAD,
+//   CUSTOMER_IMAGE_UPLOAD,
+// } from "../Queries/queries";
 
 export const customerProfilePic = (data) => async (dispatch) => {
   try {
@@ -27,8 +33,7 @@ export const customerProfilePic = (data) => async (dispatch) => {
       uploadConfig
     );
     const response = await res;
-    // localStorage.setItem("jwtToken", response.data.token);
-    // localStorage.setItem("user", JSON.stringify(response.data.user));
+
     dispatch({
       type: CUSTOMER_PROFILE_UPLOAD,
       payload: response.data,
@@ -41,7 +46,8 @@ export const customerProfilePic = (data) => async (dispatch) => {
   }
 };
 
-export const ownerProfilePic = (data) => async (dispatch) => {
+export const ownerProfilePic = (imagedata) => async (dispatch) => {
+  console.log("image datra", imagedata);
   try {
     const uploadConfig = {
       headers: {
@@ -51,14 +57,22 @@ export const ownerProfilePic = (data) => async (dispatch) => {
     };
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["x-auth-token"] = getToken();
+
     const res = await axios.post(
       `${backendServer}/ubereats/fileUpload/profile_upload`,
-      data,
+      imagedata,
       uploadConfig
     );
     const response = await res;
-    // localStorage.setItem("jwtToken", response.data.token);
-    // localStorage.setItem("user", JSON.stringify(response.data.user));
+    // const { client } = ApolloClientProvider;
+    // const res = client.query({
+    //   query: OWNER_IMAGE_UPLOAD,
+    //   variables: imagedata,
+    // });
+    // const response = await res;
+    // const { data } = response;
+    // const { getOrderStatus } = data;
+    // const { errCode, orders, status } = getOrderStatus;
     dispatch({
       type: OWNER_PROFILE_UPLOAD,
       payload: response.data,

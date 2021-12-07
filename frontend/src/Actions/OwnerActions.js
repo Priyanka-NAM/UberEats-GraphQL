@@ -28,16 +28,19 @@ import {
 import backendServer from "../backEndConfig";
 import { getToken } from "../components/Service/authService";
 import {
-  SIGN_UP_OWNER,
-  UPDATE_OWNER,
   ALL_DISHES_LIST,
   GET_OWNER_DETAILS,
-  ADD_DISH,
-  UPDATE_DISH,
   GET_NEW_ORDERS,
   GET_COMPLETED_ORDERS,
-  NEW_ORDERS_UPDATE,
 } from "../Queries/queries";
+
+import {
+  SIGN_UP_OWNER,
+  UPDATE_OWNER,
+  ADD_DISH,
+  UPDATE_DISH,
+  NEW_ORDERS_UPDATE,
+} from "../Mutations/mutations";
 import ApolloClientProvider from "./ApolloClientProvider";
 
 export const addOwner = (signupdata) => async (dispatch) => {
@@ -139,7 +142,6 @@ export const ownerNewOrders = () => async (dispatch) => {
     });
   }
 };
-
 
 export const ownerNewOrdersUpdate =
   (updateOrderDetails) => async (dispatch) => {

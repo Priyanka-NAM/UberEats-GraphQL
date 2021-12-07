@@ -64,6 +64,7 @@ class OwnerProfile extends Component {
     e.preventDefault();
     const data = new FormData();
     data.append("image", this.fileInput.files[0]);
+    // console.log(data);
     this.props.ownerProfilePic(data);
   }
 
